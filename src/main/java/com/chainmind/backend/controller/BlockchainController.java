@@ -16,6 +16,38 @@ public class BlockchainController {
     @Autowired
     private BlockchainService blockchainService;
 
+    @GetMapping("/wallet-address")
+    public String getWalletAddress() {
+        return blockchainService.getWalletAddress();
+    }
+
+    @GetMapping("/wallet-balance")
+    public Map<String, Object> getWalletBalance() {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            response.put("status", "success");
+            response.put("balance", blockchainService.getWalletBalance());
+        } catch (Exception e) {
+            response.put("status", "error");
+            response.put("message", e.getMessage());
+        }
+        return response;
+    }
+
+    @GetMapping("/tx-status/{txHash}")
+    public Map<String, Object> getTxStatus(@PathVariable String txHash) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            Object receipt = blockchainService.getTransactionReceipt(txHash);
+            response.put("status", "success");
+            response.put("receipt", receipt);
+        } catch (Exception e) {
+            response.put("status", "error");
+            response.put("message", e.getMessage());
+        }
+        return response;
+    }
+
     @PostMapping("/create-escrow")
     public Map<String, Object> createEscrow(@RequestBody Map<String, Object> body) {
         Map<String, Object> response = new HashMap<>();

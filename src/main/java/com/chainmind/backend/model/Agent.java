@@ -7,6 +7,8 @@ public class Agent {
     private double price;
     private double pastRating;
     private String estimatedDeliveryTime;
+    private String status;
+    private String walletAddress;
 
     public Agent() {}
 
@@ -18,26 +20,23 @@ public class Agent {
         this.price = price;
         this.pastRating = pastRating;
         this.estimatedDeliveryTime = estimatedDeliveryTime;
+        this.status = "AVAILABLE";
     }
 
-    // Getters and Setters
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
-
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
-
     public String getTaskType() { return taskType; }
     public void setTaskType(String taskType) { this.taskType = taskType; }
-
     public double getPrice() { return price; }
     public void setPrice(double price) { this.price = price; }
-
     public double getPastRating() { return pastRating; }
     public void setPastRating(double pastRating) { this.pastRating = pastRating; }
-
     public String getEstimatedDeliveryTime() { return estimatedDeliveryTime; }
-    public void setEstimatedDeliveryTime(String estimatedDeliveryTime) { 
-        this.estimatedDeliveryTime = estimatedDeliveryTime; 
-    }
+    public void setEstimatedDeliveryTime(String estimatedDeliveryTime) { this.estimatedDeliveryTime = estimatedDeliveryTime; }
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
+    public String getWalletAddress() { return walletAddress; }
+    public void setWalletAddress(String walletAddress) { this.walletAddress = walletAddress; }
 }

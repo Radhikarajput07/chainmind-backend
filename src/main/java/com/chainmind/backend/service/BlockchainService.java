@@ -18,6 +18,7 @@ import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameterName;
 import org.web3j.protocol.core.methods.request.Transaction;
 import org.web3j.protocol.core.methods.response.EthCall;
+import org.web3j.protocol.core.methods.response.EthGetBalance;
 import org.web3j.protocol.core.methods.response.EthGetTransactionCount;
 import org.web3j.protocol.core.methods.response.EthSendTransaction;
 import org.web3j.protocol.http.HttpService;
@@ -52,6 +53,27 @@ public class BlockchainService {
         if (privateKey != null && !privateKey.isEmpty()) {
             credentials = Credentials.create(privateKey);
         }
+    }
+
+    public String getWalletAddress() {
+        return credentials != null ? credentials.getAddress() : "No wallet configured";
+    }
+
+    public String getWalletBalance() throws Exception {
+        if (credentials == null) {
+            return "No wallet configured";
+        }
+        EthGetBalance balanceResponse = web3j.ethGetBalance(
+                credentials.getAddress(), DefaultBlockParameterName.LATEST).send();
+        return balanceResponse.getBalance().toString();
+    }
+
+    public Object getTransactionReceipt(String txHash) throws Exception {
+        var receipt = web3j.ethGetTransactionReceipt(txHash).send();
+        if (receipt.getResult() == null) {
+            return "Transaction abhi pending hai ya nahi mili";
+        }
+        return receipt.getResult().isStatusOK() ? "SUCCESS - Transaction confirmed on-chain!" : "FAILED - Transaction reverted";
     }
 
     public String createEscrow(String workerAddress, BigInteger amountInWei) throws Exception {

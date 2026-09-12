@@ -5,8 +5,9 @@ public class Task {
     private String title;
     private String description;
     private double bounty;
-    private String status; // "OPEN", "CLAIMED", "COMPLETED"
+    private String status;
     private String claimedByAgent;
+    private String escrowTxHash;
 
     public Task() {}
 
@@ -20,19 +21,16 @@ public class Task {
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
-
     public String getTitle() { return title; }
     public void setTitle(String title) { this.title = title; }
-
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
-
     public double getBounty() { return bounty; }
     public void setBounty(double bounty) { this.bounty = bounty; }
-
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
-
     public String getClaimedByAgent() { return claimedByAgent; }
     public void setClaimedByAgent(String claimedByAgent) { this.claimedByAgent = claimedByAgent; }
+    public String getEscrowTxHash() { return escrowTxHash; }
+    public void setEscrowTxHash(String escrowTxHash) { this.escrowTxHash = escrowTxHash; }
 }

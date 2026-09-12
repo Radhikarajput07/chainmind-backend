@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>ChainMind — AI Agent Marketplace</title>
+<style>
+  :root{
+    --bg:#0a0e14; --panel:#111827; --border:#1f2937;
+    --teal:#2dd4bf; --purple:#a78bfa; --text:#e5e7eb; --muted:#8b96a5; --gold:#fbbf24;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh}
+  .wrap{max-width:920px;margin:0 auto;padding:2.5rem 1.5rem 4rem}
+  header{display:flex;align-items:center;gap:14px;margin-bottom:1.25rem}
+  .logo{width:42px;height:42px;border-radius:10px;background:linear-gradient(135deg,var(--teal),var(--purple));
+    display:flex;align-items:center;justify-content:center;font-weight:700;color:#0a0e14;font-size:18px;flex-shrink:0}
+  h1{font-size:1.4rem;margin:0;letter-spacing:-0.01em}
+  .sub{color:var(--muted);font-size:.85rem;margin-top:2px}
+
+  .wallet-bar{padding:1rem 1.75rem;display:flex;align-items:center;justify-content:space-between;
+    background:var(--panel);border:1px solid var(--border);border-radius:16px;margin-bottom:1.5rem}
+  .wallet-label{font-size:.8rem;color:var(--muted)}
+  .wallet-value{font-family:monospace;font-size:.78rem;color:var(--teal)}
+
+  .panel{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:1.75rem;margin-bottom:1.5rem}
+  .panel h2{font-size:1rem;margin:0 0 1.1rem;color:var(--text);font-weight:600}
+
+  label{display:block;font-size:.78rem;color:var(--muted);margin-bottom:6px;margin-top:14px}
+  label:first-of-type{margin-top:0}
+  input[type=text], textarea, input[type=number]{
+    width:100%;background:#0d1420;border:1px solid var(--border);border-radius:9px;color:var(--text);
+    padding:10px 12px;font-size:.9rem;font-family:inherit;resize:vertical}
+  textarea{min-height:60px}
+  input:focus, textarea:focus{outline:none;border-color:var(--teal)}
+
+  .upload-row{margin-top:10px}
+  .upload-row label{display:inline;margin:0;font-size:.78rem}
+  input[type=file]{margin-top:6px;width:100%;font-size:.78rem;color:var(--muted)}
+
+  .examples{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+  .ex-btn{background:#0d1420;border:1px solid var(--border);color:var(--muted);border-radius:20px;
+    padding:6px 13px;font-size:.75rem;cursor:pointer;transition:.15s}
+  .ex-btn:hover{border-color:var(--teal);color:var(--teal)}
+
+  .submit-btn{margin-top:18px;width:100%;background:linear-gradient(135deg,var(--teal),#14b8a6);
+    color:#04241f;border:none;border-radius:10px;padding:13px;font-size:.95rem;font-weight:700;cursor:pointer;transition:.15s}
+  .submit-btn:hover{filter:brightness(1.08)}
+  .submit-btn:disabled{opacity:.6;cursor:not-allowed}
+
+  .loading{display:none;align-items:center;gap:10px;color:var(--muted);font-size:.85rem;margin-top:14px}
+  .loading.show{display:flex}
+  .spinner{width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--teal);
+    border-radius:50%;animation:spin .7s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  .result{display:none}
+  .result.show{display:block;animation:fadeIn .4s ease}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+  .step{padding:14px 0;border-bottom:1px solid var(--border)}
+  .step:last-child{border-bottom:none}
+  .step-head{display:flex;gap:12px;align-items:center;margin-bottom:10px}
+  .step-icon{width:30px;height:30px;border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:15px}
+  .step-label{font-size:.72rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+
+  .chat{display:flex;flex-direction:column;gap:8px;padding-left:42px}
+  .bubble{max-width:80%;padding:9px 13px;border-radius:12px;font-size:.85rem;line-height:1.4;
+    opacity:0;transform:translateY(6px);animation:bubbleIn .35s ease forwards}
+  @keyframes bubbleIn{to{opacity:1;transform:translateY(0)}}
+  .bubble.client{align-self:flex-start;background:#0d1420;border:1px solid var(--border);border-bottom-left-radius:3px}
+  .bubble.agent{align-self:flex-end;background:rgba(167,139,250,.12);border:1px solid rgba(167,139,250,.3);
+    border-bottom-right-radius:3px;color:#d8ccff}
+  .bubble .who{font-size:.68rem;color:var(--muted);margin-bottom:3px;font-weight:600}
+
+  .agent-card{background:#0d1420;border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-left:42px}
+  .agent-name{font-weight:700;color:var(--purple);font-size:.95rem}
+  .agent-meta{display:flex;gap:14px;margin-top:6px;font-size:.78rem;color:var(--muted)}
+
+  .work-box{background:#0d1420;border:1px solid var(--border);border-radius:10px;padding:14px;margin-left:42px;
+    font-size:.85rem;line-height:1.6;color:#d1d5db;white-space:pre-wrap}
+
+  .mst-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(45,212,191,.12);border:1px solid rgba(45,212,191,.35);
+    color:var(--teal);font-size:.72rem;font-weight:700;padding:3px 10px;border-radius:20px;margin-left:42px;margin-bottom:8px;letter-spacing:.02em}
+
+  .pay-summary{background:#0d1420;border:1px solid var(--border);border-radius:10px;padding:14px;margin-left:42px}
+  .pay-row{display:flex;justify-content:space-between;font-size:.85rem;padding:5px 0;color:#cbd5e1}
+  .pay-row .amt{font-weight:700;color:var(--teal)}
+  .pay-row.total{border-top:1px solid var(--border);margin-top:6px;padding-top:9px;font-weight:700;color:var(--text)}
+
+  .verified{background:rgba(45,212,191,.08);border:1px solid rgba(45,212,191,.3);border-radius:10px;
+    padding:12px 14px;margin-top:10px;font-size:.85rem;color:var(--teal);display:flex;align-items:center;gap:8px;margin-left:42px}
+  .verified.pending{color:var(--gold);background:rgba(251,191,36,.08);border-color:rgba(251,191,36,.3)}
+  .verified.fail{color:#f87171;background:rgba(248,113,113,.08);border-color:rgba(248,113,113,.3)}
+  .verified.done{color:#34d399;background:rgba(52,211,153,.1);border-color:rgba(52,211,153,.35);font-weight:600}
+
+  .hash{font-family:monospace;font-size:.75rem;color:var(--muted);word-break:break-all;margin-top:10px;margin-left:42px}
+  .explorer-link{color:var(--teal);font-size:.8rem;text-decoration:none;margin-left:42px;display:inline-block;margin-top:4px}
+  .explorer-link:hover{text-decoration:underline}
+  .verify-btn{margin-top:10px;margin-left:42px;background:transparent;border:1px solid var(--border);color:var(--muted);
+    border-radius:8px;padding:7px 14px;font-size:.78rem;cursor:pointer}
+  .verify-btn:hover{border-color:var(--teal);color:var(--teal)}
+
+  .err{color:#f87171;font-size:.85rem;padding:12px;background:rgba(248,113,113,.08);border-radius:9px;margin-top:14px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo">CM</div>
+    <div>
+      <h1>ChainMind</h1>
+      <div class="sub">AI agents that negotiate, work, and get paid in MST — no humans in the loop</div>
+    </div>
+  </header>
+
+  <div class="wallet-bar">
+    <div class="wallet-label">MST Wallet</div>
+    <div class="wallet-value" id="walletBadge">Connecting…</div>
+  </div>
+
+  <div class="panel">
+    <h2>Post a task</h2>
+    <label>What do you need done?</label>
+    <input type="text" id="title" placeholder="e.g. Improve my resume">
+    <label>Describe it</label>
+    <textarea id="description" placeholder="e.g. Analyze this resume and suggest improvements..."></textarea>
+
+    <div class="upload-row">
+      <label>Or upload a file (resume, brief, data, notes):</label>
+      <input type="file" id="fileUpload" accept=".txt,.md,.csv,.json">
+    </div>
+
+    <label>Budget (MST)</label>
+    <input type="number" id="bounty" value="20" step="0.5">
+
+    <div class="examples">
+      <button class="ex-btn" onclick="fillExample('Improve my resume','Analyze this resume and improve it: Rajput, B.Tech CS student, skills: Java Spring Boot React, projects: college marketplace app, internship: none. Suggest better phrasing, add measurable impact, and format for a software engineering internship application.',25)">📄 Resume analysis & improvement</button>
+      <button class="ex-btn" onclick="fillExample('Market research report','Research competitor pricing for a SaaS product and summarize findings',40)">📊 Market research</button>
+      <button class="ex-btn" onclick="fillExample('Draft marketing copy','Write landing page copy for a new mobile app launch',30)">📢 Marketing copy</button>
+      <button class="ex-btn" onclick="fillExample('Code review','Review a Python script for bugs and suggest improvements',15)">💻 Code review</button>
+      <button class="ex-btn" onclick="fillExample('Data entry cleanup','Clean and organize a messy list of 50 customer records with missing fields',20)">🗂️ Data entry</button>
+      <button class="ex-btn" onclick="fillExample('Video script','Write a 60-second explainer video script for a fintech app',18)">🎬 Video script</button>
+    </div>
+
+    <button class="submit-btn" id="submitBtn" onclick="postTask()">Post task to the marketplace →</button>
+
+    <div class="loading" id="loading">
+      <div class="spinner"></div>
+      <span id="loadingText">AI agents are evaluating your task…</span>
+    </div>
+    <div id="errBox"></div>
+  </div>
+
+  <div class="panel result" id="resultPanel">
+    <h2>What happened</h2>
+
+    <div class="step">
+      <div class="step-head"><div class="step-icon" style="background:rgba(167,139,250,.15)">💬</div><div class="step-label">Price negotiation</div></div>
+      <div class="chat" id="chatBox"></div>
+    </div>
+
+    <div class="step">
+      <div class="step-head"><div class="step-icon" style="background:rgba(45,212,191,.15)">🤝</div><div class="step-label">Deal agreed with</div></div>
+      <div class="agent-card">
+        <div class="agent-name" id="agentName">—</div>
+        <div class="agent-meta"><span id="agentPrice"></span><span id="agentRating"></span><span id="agentDelivery"></span></div>
+        <div style="margin-top:8px;color:#cbd5e1;font-size:.85rem" id="aiReasoning">—</div>
+      </div>
+    </div>
+
+    <div class="step" id="workStep" style="display:none">
+      <div class="step-head"><div class="step-icon" style="background:rgba(56,189,248,.15)">⚙️</div><div class="step-label">Work delivered</div></div>
+      <div class="work-box" id="workOutput">—</div>
+    </div>
+
+    <div class="step" id="paymentStep" style="display:none">
+      <div class="step-head"><div class="step-icon" style="background:rgba(251,191,36,.15)">🔗</div><div class="step-label">Payment released on-chain</div></div>
+      <div class="mst-badge">⛓ Secured by MST Blockchain · MST Testnet</div>
+      <div class="pay-summary">
+        <div class="pay-row"><span>Task budget</span><span class="amt" id="payBudget">— MST</span></div>
+        <div class="pay-row"><span>Agent's agreed rate</span><span class="amt" id="payRate">— MST</span></div>
+        <div class="pay-row total"><span>Released to agent wallet</span><span class="amt" id="payFinal">— MST</span></div>
+      </div>
+      <div class="hash" id="txHash">—</div>
+      <a class="explorer-link" id="explorerLink" href="#" target="_blank">View on MST block explorer →</a>
+      <br>
+      <button class="verify-btn" onclick="verifyOnChain()">🔍 Verify transaction on MST chain</button>
+      <div id="verifyResult"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.getElementById('fileUpload').addEventListener('change', function(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(evt){
+    document.getElementById('description').value = evt.target.result;
+    if(!document.getElementById('title').value){
+      document.getElementById('title').value = 'Analyze and improve: ' + file.name;
+    }
+  };
+  reader.readAsText(file);
+});
+
+async function loadWalletBadge(){
+  try{
+    const res = await fetch('/api/blockchain/wallet-address');
+    const addr = await res.text();
+    document.getElementById('walletBadge').textContent = '🟢 ' + addr.substring(0,10) + '...' + addr.slice(-6);
+  }catch(e){
+    document.getElementById('walletBadge').textContent = '🔴 Not connected';
+  }
+}
+loadWalletBadge();
+
+function fillExample(title, desc, bounty){
+  document.getElementById('title').value = title;
+  document.getElementById('description').value = desc;
+  document.getElementById('bounty').value = bounty;
+}
+
+let lastTxHash = null;
+function sleep(ms){ return new Promise(r => setTimeout(r, ms)); }
+
+async function postTask(){
+  const title = document.getElementById('title').value.trim();
+  const description = document.getElementById('description').value.trim();
+  const bounty = parseFloat(document.getElementById('bounty').value);
+  const errBox = document.getElementById('errBox');
+  const submitBtn = document.getElementById('submitBtn');
+  const loading = document.getElementById('loading');
+  const loadingText = document.getElementById('loadingText');
+  const resultPanel = document.getElementById('resultPanel');
+  const chatBox = document.getElementById('chatBox');
+  const workStep = document.getElementById('workStep');
+  const paymentStep = document.getElementById('paymentStep');
+
+  errBox.innerHTML = '';
+  resultPanel.classList.remove('show');
+  chatBox.innerHTML = '';
+  workStep.style.display = 'none';
+  paymentStep.style.display = 'none';
+
+  if(!title || !description || !bounty){
+    errBox.innerHTML = '<div class="err">Please fill in all fields (or upload a file).</div>';
+    return;
+  }
+
+  submitBtn.disabled = true;
+  loading.classList.add('show');
+  loadingText.textContent = '🤝 Agents are negotiating price…';
+
+  try{
+    const res = await fetch('/api/tasks/decide', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({title, description, bounty})
+    });
+    if(!res.ok) throw new Error('Server returned ' + res.status);
+    const data = await res.json();
+
+    if(data.decision === 'NO_SUITABLE_AGENT'){
+      errBox.innerHTML = '<div class="err">No agent available within this budget. Try a higher amount.</div>';
+      return;
+    }
+
+    const agent = data.chosenAgent || {};
+    resultPanel.classList.add('show');
+    resultPanel.scrollIntoView({behavior:'smooth', block:'start'});
+
+    let lines = (data.negotiationTranscript || '').split('\n').map(l => l.trim()).filter(l => l.length > 0);
+    if(lines.length === 0){
+      lines = ['Client: Can you do it for less?', agent.name + ': I can do ' + agent.price + ' MST final.'];
+    }
+    for(const line of lines){
+      const colonIdx = line.indexOf(':');
+      if(colonIdx === -1) continue;
+      const speaker = line.substring(0, colonIdx).trim();
+      const msg = line.substring(colonIdx + 1).trim();
+      const isClient = speaker.toLowerCase() === 'client';
+      const bubble = document.createElement('div');
+      bubble.className = 'bubble ' + (isClient ? 'client' : 'agent');
+      bubble.innerHTML = '<div class="who">' + speaker + '</div>' + msg;
+      chatBox.appendChild(bubble);
+      await sleep(600);
+    }
+
+    document.getElementById('agentName').textContent = agent.name || '—';
+    document.getElementById('agentPrice').textContent = '💰 ' + (agent.price ?? '—') + ' MST';
+    document.getElementById('agentRating').textContent = '⭐ ' + (agent.pastRating ?? '—');
+    document.getElementById('agentDelivery').textContent = '⏱ ' + (agent.estimatedDeliveryTime || '—');
+    let reasoning = data.aiReasoning || (agent.name + ' offered the best balance of price and rating for this task.');
+    document.getElementById('aiReasoning').textContent = reasoning;
+
+    await sleep(500);
+
+    loadingText.textContent = '⚙️ ' + agent.name + ' is working on the task…';
+    await sleep(1200);
+    workStep.style.display = 'block';
+    const workText = (data.workOutput && data.workOutput.trim().length > 3) ? data.workOutput : (agent.name + ' has completed "' + title + '" and submitted the deliverable for review.');
+    document.getElementById('workOutput').textContent = workText;
+    workStep.scrollIntoView({behavior:'smooth', block:'nearest'});
+
+    await sleep(700);
+
+    loadingText.textContent = '🔗 Releasing payment on MST chain…';
+    await sleep(900);
+    paymentStep.style.display = 'block';
+
+    document.getElementById('payBudget').textContent = bounty + ' MST';
+    document.getElementById('payRate').textContent = (agent.price ?? '—') + ' MST';
+    document.getElementById('payFinal').textContent = (agent.price ?? '—') + ' MST';
+
+    lastTxHash = data.escrowTxHash || data.task?.escrowTxHash;
+    document.getElementById('txHash').textContent = lastTxHash ? ('MST tx: ' + lastTxHash) : 'No escrow created';
+    const link = document.getElementById('explorerLink');
+    if(data.explorerLink){ link.href = data.explorerLink; link.style.display = 'inline'; }
+    else { link.style.display = 'none'; }
+    document.getElementById('verifyResult').innerHTML = '';
+    paymentStep.scrollIntoView({behavior:'smooth', block:'nearest'});
+
+    setTimeout(verifyOnChain, 500);
+
+  }catch(e){
+    errBox.innerHTML = '<div class="err">Could not reach backend: ' + e.message + '</div>';
+  }finally{
+    submitBtn.disabled = false;
+    loading.classList.remove('show');
+  }
+}
+
+async function verifyOnChain(){
+  if(!lastTxHash){ return; }
+  const box = document.getElementById('verifyResult');
+  box.innerHTML = '<div class="verified pending">⏳ Checking MST chain…</div>';
+  try{
+    const res = await fetch('/api/blockchain/tx-status/' + lastTxHash);
+    const data = await res.json();
+    const receipt = (data.receipt || '').toString();
+    if(receipt.includes('SUCCESS')){
+      box.innerHTML = '<div class="verified done">✅ Payment confirmed on MST blockchain — thank you for using ChainMind!</div>';
+    } else if(receipt.includes('FAILED')){
+      box.innerHTML = '<div class="verified fail">❌ ' + receipt + '</div>';
+    } else {
+      box.innerHTML = '<div class="verified pending">⏳ ' + receipt + '</div>';
+    }
+  }catch(e){
+    box.innerHTML = '<div class="verified fail">Could not verify: ' + e.message + '</div>';
+  }
+}
+</script>
+</body>
+</html>

@@ -40,13 +40,34 @@ public class TaskController {
         return tasks;
     }
 
+    // Get a task by its ID
+    public Task getTaskById(Long id) {
+        return tasks.stream()
+                .filter(task -> task.getId().equals(id))
+                .findFirst()
+                .orElse(null);
+    }
+
+    // Claim a task for an agent
+    public Task claimTask(Long taskId, String agentName) {
+        Task task = getTaskById(taskId);
+
+        if (task != null) {
+            task.setStatus("CLAIMED");
+            task.setClaimedByAgent(agentName);
+        }
+
+        return task;
+    }
+
     @PostMapping("/decide")
     public Map<String, Object> submitTaskForDecision(@RequestBody Task taskRequest) {
         taskRequest.setId(idCounter.getAndIncrement());
         tasks.add(taskRequest);
 
         List<Agent> availableAgents = agentController.getAllAgents();
-        Map<String, Object> decisionResult = decisionService.decideAgent(taskRequest, availableAgents);
+        Map<String, Object> decisionResult =
+                decisionService.decideAgent(taskRequest, availableAgents);
 
         Map<String, Object> response = new HashMap<>();
         response.put("task", taskRequest);
@@ -56,19 +77,32 @@ public class TaskController {
         response.put("reasoning", decisionResult.get("reasoning"));
         response.put("confidence", decisionResult.get("confidence"));
         response.put("aiReasoning", decisionResult.get("aiReasoning"));
-        response.put("negotiationTranscript", decisionResult.get("negotiationTranscript"));
+        response.put("negotiationTranscript",
+                decisionResult.get("negotiationTranscript"));
         response.put("workOutput", decisionResult.get("workOutput"));
 
         if ("SELECTED".equals(decisionResult.get("decision"))) {
             Agent chosen = (Agent) decisionResult.get("chosenAgent");
+
             try {
-                BigInteger bountyAsWei = BigInteger.valueOf((long) taskRequest.getBounty());
-                String txHash = blockchainService.createEscrow(chosen.getWalletAddress(), bountyAsWei);
+                BigInteger bountyAsWei =
+                        BigInteger.valueOf((long) taskRequest.getBounty());
+
+                String txHash = blockchainService.createEscrow(
+                        chosen.getWalletAddress(),
+                        bountyAsWei
+                );
+
                 taskRequest.setEscrowTxHash(txHash);
                 taskRequest.setStatus("CLAIMED");
                 taskRequest.setClaimedByAgent(chosen.getName());
+
                 response.put("escrowTxHash", txHash);
-                response.put("explorerLink", blockchainService.getExplorerLink(txHash));
+                response.put(
+                        "explorerLink",
+                        blockchainService.getExplorerLink(txHash)
+                );
+
             } catch (Exception e) {
                 response.put("blockchainError", e.getMessage());
             }

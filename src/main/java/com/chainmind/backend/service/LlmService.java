@@ -19,7 +19,8 @@ public class LlmService {
     private final RestTemplate restTemplate = new RestTemplate();
 
     public String askAi(String prompt) {
-        String url = "https://openrouter.ai/api/v1/chat/completions";
+    prompt = "CURRENCY RULE: All amounts must be in MSTC only. Never use dollars or the $ symbol. Always write amounts like '6 MSTC'.\n\n" + prompt;
+    String url = "https://openrouter.ai/api/v1/chat/completions";
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);

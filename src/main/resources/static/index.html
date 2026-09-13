@@ -230,6 +230,7 @@
 </div>
 
 <script>
+  const MST_EXPLORER = "https://testnet.mstscan.com";
 function fillExample(t,d,b){document.getElementById('title').value=t;document.getElementById('description').value=d;document.getElementById('bounty').value=b;}
 function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
 
@@ -361,9 +362,16 @@ async function postTask(){
     document.getElementById('payFinal').textContent = (agent.price??'—')+' MSTC';
 
     lastTxHash = data.escrowTxHash || data.task?.escrowTxHash;
-    document.getElementById('txHash').textContent = lastTxHash ? ('MST tx '+lastTxHash) : 'No escrow created';
+       const txEl = document.getElementById('txHash');
     const link = document.getElementById('explorerLink');
-    if(data.explorerLink){ link.href = data.explorerLink; link.style.display='inline'; } else { link.style.display='none'; }
+    if(lastTxHash){
+      const url = MST_EXPLORER + '/tx/' + lastTxHash;
+      txEl.innerHTML = 'MST tx <a href="'+url+'" target="_blank" style="color:#4F8CFF">'+lastTxHash+'</a>';
+      link.href = url; link.style.display='inline';
+    } else {
+      txEl.textContent = 'No escrow created';
+      link.style.display='none';
+    }
 
     addChainBlock('money', 'Escrow locked on MST', (agent.price??'—')+' MSTC held in smart contract', lastTxHash ? ('tx '+lastTxHash.substring(0,10)+'…') : 'MSTC');
     setTimeout(verifyOnChain, 500);
